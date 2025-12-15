@@ -265,3 +265,8 @@ Then 리뷰가 저장되고 공개된다
 
 **BeanTaste Map** - 당신의 취향에 맞는 완벽한 카페를 찾아드립니다 ☕
 
+## To-do List
+
+- TC
+- Implementation
+- Refactoring
