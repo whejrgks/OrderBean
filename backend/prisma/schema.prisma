@@ -1,0 +1,60 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Menu {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  price       Float
+  category    String
+  imageUrl    String?
+  isAvailable Boolean  @default(true)
+  options     Json?    // 커스터마이징 옵션 (예: 샷 추가, 우유 종류 등)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  orderItems OrderItem[]
+}
+
+model Order {
+  id          String      @id @default(uuid())
+  customerId  String?     // 고객 식별자 (세션 또는 사용자 ID)
+  status      OrderStatus @default(PENDING)
+  totalPrice  Float
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  items       OrderItem[]
+}
+
+model OrderItem {
+  id          String  @id @default(uuid())
+  orderId     String
+  menuId      String
+  quantity    Int     @default(1)
+  customizations Json? // 선택한 커스터마이징 옵션
+  price       Float   // 주문 시점의 가격
+
+  order       Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menu        Menu    @relation(fields: [menuId], references: [id])
+
+  createdAt   DateTime @default(now())
+}
+
+enum OrderStatus {
+  PENDING      // 주문 접수
+  PREPARING    // 제조 중
+  READY        // 준비 완료
+  COMPLETED    // 픽업 완료
+  CANCELLED    // 취소됨
+}
+
