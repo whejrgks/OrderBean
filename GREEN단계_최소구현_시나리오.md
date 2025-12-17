@@ -28,25 +28,9 @@
 
 ---
 
-### Phase 2: 백엔드 기본 인프라 (우선순위: 높음)
 
-#### 2.1 Express 서버 설정
-- [ ] `backend/src/index.ts` 생성
-  - Express 앱 초기화
-  - JSON 미들웨어 설정
-  - CORS 설정
-  - 기본 라우트 등록
-  - 서버 시작 로직
 
-#### 2.2 데이터베이스 연결
-- [ ] `backend/src/config/database.ts` 생성
-  - Prisma Client 인스턴스 생성 및 export
-  - 연결 테스트 함수 (선택사항)
 
-#### 2.3 에러 핸들링
-- [ ] `backend/src/utils/errorHandler.ts` 생성
-  - 기본 에러 핸들러 미들웨어
-  - 404 핸들러
 
 ---
 

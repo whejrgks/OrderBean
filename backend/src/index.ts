@@ -2,6 +2,8 @@ import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import { notFoundHandler, errorHandler } from './utils/errorHandler'
+import menuRoutes from './routes/menuRoutes'
+import orderRoutes from './routes/orderRoutes'
 
 // 환경 변수 로드
 dotenv.config()
@@ -19,9 +21,9 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok' })
 })
 
-// API 라우트는 나중에 추가
-// app.use('/api/menus', menuRoutes)
-// app.use('/api/orders', orderRoutes)
+// API 라우트 등록
+app.use('/api/menus', menuRoutes)
+app.use('/api/orders', orderRoutes)
 // app.use('/api/admin', adminRoutes)
 
 // 에러 핸들링 (순서 중요: 404 핸들러 먼저, 에러 핸들러는 마지막)
