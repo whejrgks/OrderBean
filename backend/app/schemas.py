@@ -46,8 +46,10 @@ class OrderItemBase(BaseModel):
     customizations: Optional[Dict[str, Any]] = None
 
 
-class OrderItemCreate(OrderItemBase):
-    pass
+class OrderItemCreate(BaseModel):
+    menuId: str  # API에서는 camelCase로 받음
+    quantity: int
+    customizations: Optional[Dict[str, Any]] = None
 
 
 class OrderItem(OrderItemBase):
@@ -66,8 +68,9 @@ class OrderBase(BaseModel):
     items: List[OrderItemCreate]
 
 
-class OrderCreate(OrderBase):
-    pass
+class OrderCreate(BaseModel):
+    customerId: Optional[str] = None  # API에서는 camelCase로 받음
+    items: List[OrderItemCreate]
 
 
 class OrderUpdate(BaseModel):

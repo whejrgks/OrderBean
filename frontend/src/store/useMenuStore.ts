@@ -15,12 +15,17 @@ export const useMenuStore = create<MenuStore>((set, get) => ({
   error: null,
   
   fetchMenus: async () => {
+    console.log('📋 fetchMenus called')
     set({ loading: true, error: null })
     try {
+      console.log('📋 Calling getMenus()...')
       const menus = await getMenus()
+      console.log('📋 Menus received:', menus)
       set({ menus, loading: false })
-    } catch (error) {
-      set({ error: 'Failed to fetch menus', loading: false })
+    } catch (error: any) {
+      console.error('❌ Menu fetch error:', error)
+      const errorMessage = error?.response?.data?.detail || error?.message || 'Failed to fetch menus'
+      set({ error: `에러: ${errorMessage}`, loading: false })
     }
   },
   

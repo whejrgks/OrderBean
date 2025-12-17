@@ -11,44 +11,502 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: #f5f5f5;
 }
 
-.menu-card {
-  border: 1px solid #ddd;
-  padding: 1rem;
-  margin: 1rem;
-  border-radius: 4px;
+#root {
+  min-height: 100vh;
 }
 
-.menu-card h3 {
-  margin-bottom: 0.5rem;
+/* Header 스타일 */
+.header {
+  background-color: #fff;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 1rem 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
-.menu-card button {
-  margin-top: 0.5rem;
+.header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.brand {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+  margin: 0;
+}
+
+.header-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.header-btn {
   padding: 0.5rem 1rem;
-  cursor: pointer;
-}
-
-.menu-card button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.cart {
   border: 1px solid #ddd;
-  padding: 1rem;
-  margin: 1rem;
+  background: #fff;
   border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
 }
 
+.header-btn:hover {
+  background: #f5f5f5;
+}
+
+.header-btn.active {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+/* Order Page 스타일 */
 .order-page {
-  padding: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
 }
 
 .menu-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.loading, .error, .no-menus {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+}
+
+/* Menu Card 스타일 */
+.menu-card {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.menu-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.menu-image {
+  width: 100%;
+  height: 200px;
+  background: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.menu-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  font-size: 0.9rem;
+  background: linear-gradient(135deg, #f5f5f5 25%, transparent 25%, transparent 75%, #f5f5f5 75%, #f5f5f5),
+              linear-gradient(135deg, #f5f5f5 25%, transparent 25%, transparent 75%, #f5f5f5 75%, #f5f5f5);
+  background-size: 20px 20px;
+  background-position: 0 0, 10px 10px;
+}
+
+.menu-info {
+  padding: 1rem;
+}
+
+.menu-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.menu-price {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #007bff;
+  margin-bottom: 0.5rem;
+}
+
+.menu-description {
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 1rem;
+  min-height: 1.2rem;
+}
+
+.menu-options {
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.option-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.option-checkbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.option-checkbox span {
+  user-select: none;
+}
+
+.add-to-cart-btn {
+  width: 100%;
+  padding: 0.75rem;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.add-to-cart-btn:hover:not(:disabled) {
+  background: #0056b3;
+}
+
+.add-to-cart-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Cart 스타일 */
+.cart {
+  background: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-top: 2rem;
+}
+
+.cart-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.cart-empty {
+  text-align: center;
+  padding: 2rem;
+  color: #999;
+}
+
+.cart-items {
+  margin-bottom: 1rem;
+}
+
+.cart-item {
+  background: white;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 0.75rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cart-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.cart-item-name {
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.cart-item-price {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #007bff;
+}
+
+.cart-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.quantity-btn {
+  width: 28px;
+  height: 28px;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.quantity-btn:hover {
+  background: #f5f5f5;
+  border-color: #007bff;
+}
+
+.quantity {
+  min-width: 30px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.remove-btn {
+  padding: 0.25rem 0.75rem;
+  border: 1px solid #dc3545;
+  background: white;
+  color: #dc3545;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s;
+}
+
+.remove-btn:hover {
+  background: #dc3545;
+  color: white;
+}
+
+.cart-footer {
+  border-top: 1px solid #e0e0e0;
+  padding-top: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cart-total {
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.cart-total strong {
+  color: #007bff;
+}
+
+.order-btn {
+  padding: 0.75rem 2rem;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.order-btn:hover:not(:disabled) {
+  background: #218838;
+}
+
+.order-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Admin Page 스타일 */
+.admin-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.admin-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1.5rem;
+}
+
+.dashboard-stats {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-stats p {
+  font-size: 1rem;
+  color: #333;
+  margin: 0;
+}
+
+.section-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+/* 재고 현황 */
+.inventory-section {
+  margin-bottom: 2rem;
+}
+
+.inventory-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 1rem;
 }
 
+.inventory-card {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.inventory-menu-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.inventory-stock {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #007bff;
+  margin-bottom: 1rem;
+}
+
+.inventory-controls {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.inventory-btn {
+  width: 32px;
+  height: 32px;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 4px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.inventory-btn:hover {
+  background: #f5f5f5;
+  border-color: #007bff;
+  color: #007bff;
+}
+
+/* 주문 현황 */
+.orders-section {
+  margin-bottom: 2rem;
+}
+
+.orders-list {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.no-orders {
+  padding: 2rem;
+  text-align: center;
+  color: #999;
+}
+
+.order-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.order-item:last-child {
+  border-bottom: none;
+}
+
+.order-info {
+  flex: 1;
+}
+
+.order-date {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 0.25rem;
+}
+
+.order-details {
+  font-size: 1rem;
+  color: #333;
+}
+
+.order-actions {
+  display: flex;
+  align-items: center;
+}
+
+.order-status-btn {
+  padding: 0.5rem 1rem;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.order-status-btn:hover {
+  background: #0056b3;
+}
+
+.order-status-completed {
+  color: #28a745;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
