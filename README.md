@@ -242,54 +242,72 @@ OrderBean/
 - **Axios** - HTTP 클라이언트
 
 ### Backend
-- **Node.js** - 런타임 환경
-- **Express** - 웹 프레임워크
-- **TypeScript** - 타입 안정성
-- **Prisma** - ORM 및 데이터베이스 관리
+- **Python 3.11+** - 런타임 환경
+- **FastAPI** - 비동기 고성능 Python 웹 프레임워크
+- **SQLAlchemy** - ORM 및 데이터베이스 관리
+- **Alembic** - 데이터베이스 마이그레이션
 - **PostgreSQL** - 데이터베이스
+- **Pydantic** - 데이터 검증 및 설정 관리
 
 ---
 
 ## 10. 시작하기 (Getting Started)
 
 ### 사전 요구사항
-- Node.js 18 이상
+- Python 3.11 이상
 - PostgreSQL 14 이상
-- npm 또는 yarn
+- pip (Python 패키지 관리자)
+- Node.js 18 이상 (프론트엔드용)
+- npm 또는 yarn (프론트엔드용)
 
 ### 설치 및 실행
 
-1. **의존성 설치**
+1. **백엔드 의존성 설치**
    ```bash
-   npm run install:all
+   cd backend
+   pip install -r requirements.txt
    ```
 
-2. **환경 변수 설정**
-   - `backend/env.example`을 참고하여 `backend/.env` 파일 생성
-   - PostgreSQL 데이터베이스 URL 설정
-
-3. **데이터베이스 설정**
+2. **프론트엔드 의존성 설치**
    ```bash
-   # Prisma 클라이언트 생성
+   cd frontend
+   npm install
+   ```
+
+3. **환경 변수 설정**
+   - `backend/.env.example`을 참고하여 `backend/.env` 파일 생성
+   - PostgreSQL 데이터베이스 URL 설정
+   ```env
+   DATABASE_URL=postgresql://user:password@localhost:5432/orderbean
+   ```
+
+4. **데이터베이스 설정**
+   ```bash
    cd backend
-   npm run prisma:generate
+   # Alembic 마이그레이션 초기화 (최초 1회)
+   alembic init alembic
    
    # 데이터베이스 마이그레이션
-   npm run prisma:migrate
-   
-   # (선택) Prisma Studio로 데이터베이스 확인
-   npm run prisma:studio
+   alembic revision --autogenerate -m "Initial migration"
+   alembic upgrade head
    ```
 
-4. **개발 서버 실행**
+5. **개발 서버 실행**
    ```bash
-   # 프론트엔드와 백엔드 동시 실행
-   npm run dev
+   # 백엔드 실행 (FastAPI)
+   cd backend
+   python run.py
+   # 또는
+   uvicorn app.main:app --reload --port 5000
    
-   # 또는 개별 실행
-   npm run dev:frontend  # http://localhost:3000
-   npm run dev:backend   # http://localhost:5000
+   # 프론트엔드 실행
+   cd frontend
+   npm run dev  # http://localhost:3000
    ```
+
+6. **API 문서 확인**
+   - Swagger UI: http://localhost:5000/docs
+   - ReDoc: http://localhost:5000/redoc
 
 ---
 
@@ -300,7 +318,9 @@ OrderBean/
 **백엔드 테스트**
 ```bash
 cd backend
-npm test
+pytest
+# 또는 상세 출력
+pytest -v
 ```
 
 **프론트엔드 테스트**
