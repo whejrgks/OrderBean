@@ -1,27 +1,27 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { useOrderStore } from '../store/useOrderStore'
+import { calculateItemPrice } from '../utils/priceCalculator'
+import { extractSelectedOptionNames } from '../utils/optionParser'
+import { CartItem } from '../store/useOrderStore'
 
 const Cart: React.FC = () => {
   const { cart, createOrder, loading, removeFromCart, updateQuantity } = useOrderStore()
   
-  const calculateItemPrice = (item: any) => {
-    const basePrice = item.menu.price
-    const optionPrice = item.customizations?.options?.reduce(
-      (sum: number, opt: any) => sum + (opt.price || 0), 
-      0
-    ) || 0
-    return (basePrice + optionPrice) * item.quantity
-  }
+  const totalPrice = useMemo(() => {
+    return cart.reduce((sum, item) => {
+      return sum + calculateItemPrice(
+        item.menu.price,
+        item.quantity,
+        item.customizations
+      )
+    }, 0)
+  }, [cart])
 
-  const totalPrice = cart.reduce((sum, item) => {
-    return sum + calculateItemPrice(item)
-  }, 0)
-
-  const formatItemName = (item: any) => {
+  const formatItemName = (item: CartItem): string => {
     let name = item.menu.name
-    if (item.customizations?.options?.length > 0) {
-      const optionNames = item.customizations.options.map((opt: any) => opt.name).join(', ')
-      name += ` (${optionNames})`
+    const optionNames = extractSelectedOptionNames(item.customizations)
+    if (optionNames.length > 0) {
+      name += ` (${optionNames.join(', ')})`
     }
     return name
   }
@@ -46,7 +46,11 @@ const Cart: React.FC = () => {
                 {formatItemName(item)} X {item.quantity}
               </span>
               <span className="cart-item-price">
-                {calculateItemPrice(item).toLocaleString()}원
+                {calculateItemPrice(
+                  item.menu.price,
+                  item.quantity,
+                  item.customizations
+                ).toLocaleString()}원
               </span>
             </div>
             <div className="cart-item-actions">

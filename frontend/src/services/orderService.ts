@@ -1,9 +1,10 @@
 import api from './api'
+import { Customizations, OrderItem as OrderItemType } from '../types'
 
 export interface OrderItem {
   menuId: string
   quantity: number
-  customizations?: Record<string, any>
+  customizations?: Customizations
 }
 
 export interface CreateOrderRequest {
@@ -16,7 +17,7 @@ export interface Order {
   customerId: string
   status: string
   totalPrice: number
-  items: any[]
+  items: OrderItemType[]
   createdAt: string
   updatedAt: string
 }
