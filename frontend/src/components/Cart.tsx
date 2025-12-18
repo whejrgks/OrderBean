@@ -1,10 +1,10 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useCallback } from 'react'
 import { useOrderStore } from '../store/useOrderStore'
 import { calculateItemPrice } from '../utils/priceCalculator'
 import { extractSelectedOptionNames } from '../utils/optionParser'
 import { CartItem } from '../store/useOrderStore'
 
-const Cart: React.FC = () => {
+const Cart: React.FC = React.memo(() => {
   const { cart, createOrder, loading, removeFromCart, updateQuantity } = useOrderStore()
   
   const totalPrice = useMemo(() => {
@@ -17,14 +17,14 @@ const Cart: React.FC = () => {
     }, 0)
   }, [cart])
 
-  const formatItemName = (item: CartItem): string => {
+  const formatItemName = useCallback((item: CartItem): string => {
     let name = item.menu.name
     const optionNames = extractSelectedOptionNames(item.customizations)
     if (optionNames.length > 0) {
       name += ` (${optionNames.join(', ')})`
     }
     return name
-  }
+  }, [])
   
   if (cart.length === 0) {
     return (
@@ -92,6 +92,10 @@ const Cart: React.FC = () => {
     </div>
   )
 }
+
+})
+
+Cart.displayName = 'Cart'
 
 export default Cart
 

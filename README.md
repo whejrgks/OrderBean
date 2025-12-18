@@ -453,5 +453,146 @@ npm test
 
 ---
 
+## 13. 백엔드 리팩토링 할 일 목록 (Backend Refactoring TODO)
+
+백엔드 코드 분석 결과를 바탕으로 한 리팩토링 작업 목록입니다. 자세한 내용은 [`backend/CODE_REVIEW.md`](./backend/CODE_REVIEW.md)를 참고하세요.
+
+### 🔴 높은 우선순위 (즉시 개선 필요)
+
+#### 1. 데이터베이스 연동
+- [ ] SQLAlchemy를 사용한 실제 DB 연동
+  - [ ] 메모리 저장소 제거 (`order_service.py`의 `_orders_storage`)
+  - [ ] DB 세션 의존성 주입 (`get_db()` 활용)
+  - [ ] 라우터에서 DB 세션 받기 (`orders.py`, `menus.py`, `admin.py`)
+  - [ ] 서비스 레이어에 DB 세션 전달
+- [ ] 실제 데이터베이스 쿼리 구현
+  - [ ] `order_service.py`: 메모리 저장소 → DB 쿼리로 전환
+  - [ ] `menu_service.py`: 하드코딩된 데이터 → DB 쿼리로 전환
+  - [ ] `admin_service.py`: DB 쿼리 기반으로 전환
+
+#### 2. 타입 안정성 개선
+- [ ] 타입 힌트 추가
+  - [ ] `order_service.py`: 함수 시그니처에 타입 힌트 추가 (`Dict`, `List`, `Optional` 사용)
+  - [ ] `menu_service.py`: 반환 타입 명시
+  - [ ] `admin_service.py`: 타입 힌트 추가
+- [ ] Pydantic 스키마 검증 활용
+  - [ ] `orders.py`: 스키마 검증 우회 제거 (14-15줄, 26-27줄)
+  - [ ] `admin.py`: 스키마 검증 우회 제거 (20-21줄)
+  - [ ] `response_model` 파라미터 활용
+  - [ ] 커스텀 스키마 생성 (필요한 필드 포함)
+- [ ] 네이밍 컨벤션 통일
+  - [ ] `schemas.py`: camelCase vs snake_case 통일
+  - [ ] `OrderItemCreate`의 `menuId`, `menuName`, `menuPrice` 처리
+  - [ ] `OrderCreate`의 `customerId` 처리
+  - [ ] Pydantic의 `Field`와 `alias` 활용
+
+#### 3. 에러 처리 개선
+- [ ] 일관된 예외 처리 전략 수립
+  - [ ] 서비스 레이어에서 커스텀 예외 발생
+  - [ ] 라우터에서 예외 처리 통일
+  - [ ] 에러 핸들러 미들웨어 추가
+- [ ] 에러 처리 구현
+  - [ ] `order_service.py`: 주문을 찾지 못한 경우 `HTTPException` 발생 (181-201줄)
+  - [ ] `menu_service.py`: `get_menu_by_id` 실제 구현
+  - [ ] `menu_service.py`: `delete_menu` 실제 삭제 구현
+  - [ ] 일관된 에러 응답 형식
+
+#### 4. 보안 개선
+- [ ] CORS 설정 환경별 분리
+  - [ ] `main.py`: `allow_origins=["*"]` 환경 변수로 분리
+  - [ ] 개발/프로덕션 환경별 설정
+  - [ ] `ALLOWED_ORIGINS` 환경 변수 사용
+- [ ] 데이터베이스 URL 보안 강화
+  - [ ] `database.py`: 기본값 제거 또는 빈 문자열
+  - [ ] 필수 환경 변수 검증
+  - [ ] 하드코딩된 자격 증명 제거
+
+### 🟠 중간 우선순위 (단기 개선)
+
+#### 5. 코드 품질 개선
+- [ ] 디버그 로그 제거 또는 로깅 모듈 사용
+  - [ ] `order_service.py`: 7개의 `print` 문 제거
+  - [ ] Python `logging` 모듈 사용
+  - [ ] 로그 레벨 설정 (DEBUG, INFO, WARNING, ERROR)
+  - [ ] 개발 환경에서만 DEBUG 로그 출력
+- [ ] 하드코딩된 값 제거
+  - [ ] `main.py`: `port=5000` 환경 변수로 분리
+  - [ ] `run.py`: `port=5000` 환경 변수로 분리
+  - [ ] `order_service.py`: `"anonymous"` 상수화
+  - [ ] `menu_service.py`: 하드코딩된 샘플 데이터 제거
+  - [ ] `config.py` 설정 파일 생성
+- [ ] 복잡한 함수 분리
+  - [ ] `order_service.py`: `create_order` 함수 분리 (150줄 → 여러 함수)
+    - [ ] `_calculate_item_price()` - 가격 계산
+    - [ ] `_parse_customizations()` - 옵션 파싱
+    - [ ] `_get_menu_info()` - 메뉴 정보 조회
+    - [ ] `_create_order_items()` - 주문 항목 생성
+
+#### 6. 비동기 처리 개선
+- [ ] 실제 비동기 작업 구현
+  - [ ] SQLAlchemy async 사용
+  - [ ] 또는 동기 함수로 변경 (현재 구현 기준)
+- [ ] 데이터베이스 세션 관리
+  - [ ] FastAPI의 `Depends(get_db)` 활용
+  - [ ] 컨텍스트 매니저로 세션 관리
+  - [ ] 트랜잭션 처리
+
+#### 7. 코드 중복 제거
+- [ ] 공통 로직 함수화
+  - [ ] 날짜/시간 생성: `datetime.utcnow()` 유틸리티 함수로 분리
+  - [ ] UUID 생성: 모델의 `default=uuid.uuid4` 활용 또는 유틸리티 함수
+  - [ ] 메뉴 정보 조회: `_get_menu_by_id()` 헬퍼 함수 생성
+- [ ] 유틸리티 모듈 생성
+  - [ ] `utils/datetime_utils.py` 생성
+  - [ ] `utils/uuid_utils.py` 생성 (필요시)
+  - [ ] `utils/menu_utils.py` 생성
+
+### 🟡 낮은 우선순위 (장기 개선)
+
+#### 8. 테스트 가능성 향상
+- [ ] 의존성 주입 패턴 적용
+  - [ ] 저장소를 의존성으로 주입
+  - [ ] 인터페이스 기반 설계
+  - [ ] 리포지토리 패턴 적용
+- [ ] 전역 상태 제거
+  - [ ] `order_service.py`: `_orders_storage` 전역 변수 제거
+  - [ ] 저장소를 클래스로 캡슐화
+  - [ ] 인스턴스 기반 접근
+  - [ ] 테스트용 모킹 저장소 제공
+
+#### 9. 문서화 개선
+- [ ] Docstring 추가
+  - [ ] Google/NumPy 스타일 docstring 추가
+  - [ ] 복잡한 로직에 인라인 주석
+  - [ ] 타입 힌트와 함께 자동 문서화
+- [ ] API 문서 보완
+  - [ ] Swagger 문서 개선
+  - [ ] 예제 추가
+- [ ] 주석 개선
+  - [ ] "최소 구현" 주석에 구체적인 계획 명시
+  - [ ] TODO 주석 추가
+
+#### 10. 데이터 일관성 개선
+- [ ] 주문 생성 로직 개선
+  - [ ] `order_service.py`: 임시 order_id 생성 패턴 개선 (140, 155-156줄)
+  - [ ] 먼저 order_id 생성 후 사용
+  - [ ] 트랜잭션 내에서 처리
+- [ ] 메뉴 유효성 검증 강화
+  - [ ] `order_service.py`: 메뉴 조회 실패 시 예외 발생 (88-94줄)
+  - [ ] 주문 생성 전 메뉴 유효성 검증
+  - [ ] 데이터 무결성 보장
+
+---
+
+### 백엔드 리팩토링 진행 시 주의사항
+
+1. **점진적 개선**: 한 번에 모든 것을 바꾸지 말고 단계적으로 개선
+2. **데이터 마이그레이션**: 메모리 저장소에서 DB로 전환 시 데이터 마이그레이션 계획
+3. **테스트 작성**: 리팩토링 전후 테스트 작성으로 회귀 방지
+4. **기능 검증**: 각 리팩토링 단계마다 기능 동작 확인
+5. **문서화**: 변경 사항과 이유를 문서화
+
+---
+
 📌 **OrderBean PRD v1.0**
 

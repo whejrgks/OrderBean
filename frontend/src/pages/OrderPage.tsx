@@ -1,9 +1,10 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { useMenuStore } from '../store/useMenuStore'
 import { useOrderStore } from '../store/useOrderStore'
 import Header from '../components/Header'
 import MenuCard from '../components/MenuCard'
 import Cart from '../components/Cart'
+import { API_CONFIG } from '../constants/config'
 
 const OrderPage: React.FC = () => {
   const { menus, loading, error, fetchMenus } = useMenuStore()
@@ -11,8 +12,17 @@ const OrderPage: React.FC = () => {
   
   useEffect(() => {
     fetchMenus()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [fetchMenus])
+  
+  const menuCards = useMemo(() => {
+    return menus.map((menu) => (
+      <MenuCard
+        key={menu.id}
+        menu={menu}
+        addToCart={addToCart}
+      />
+    ))
+  }, [menus, addToCart])
   
   if (loading) {
     return (
@@ -32,20 +42,12 @@ const OrderPage: React.FC = () => {
         <div className="order-page">
           <div className="error">
             <p>{error}</p>
-            <p style={{ fontSize: '0.9rem', color: '#666', marginTop: '0.5rem' }}>
-              백엔드 서버가 실행 중인지 확인하세요. (http://localhost:5000)
+            <p className="error-detail">
+              백엔드 서버가 실행 중인지 확인하세요. ({API_CONFIG.BACKEND_URL})
             </p>
             <button 
-              onClick={() => fetchMenus()} 
-              style={{ 
-                marginTop: '1rem', 
-                padding: '0.5rem 1rem', 
-                background: '#007bff', 
-                color: 'white', 
-                border: 'none', 
-                borderRadius: '4px',
-                cursor: 'pointer'
-              }}
+              className="retry-button"
+              onClick={() => fetchMenus()}
             >
               다시 시도
             </button>
@@ -63,13 +65,7 @@ const OrderPage: React.FC = () => {
           {menus.length === 0 ? (
             <div className="no-menus">메뉴가 없습니다.</div>
           ) : (
-            menus.map((menu) => (
-              <MenuCard
-                key={menu.id}
-                menu={menu}
-                addToCart={addToCart}
-              />
-            ))
+            menuCards
           )}
         </div>
         <Cart />
