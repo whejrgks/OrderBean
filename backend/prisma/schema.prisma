@@ -10,51 +10,61 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// 주문 상태 Enum
+enum OrderStatus {
+  PENDING    // 주문 접수
+  PREPARING  // 제조 중
+  READY      // 준비 완료
+  COMPLETED  // 픽업 완료
+  CANCELLED  // 취소됨
+}
+
+// 메뉴 모델
 model Menu {
-  id          String   @id @default(uuid())
+  id          String      @id @default(uuid())
   name        String
   description String?
-  price       Float
+  price       Int
   category    String
   imageUrl    String?
-  isAvailable Boolean  @default(true)
-  options     Json?    // 커스터마이징 옵션 (예: 샷 추가, 우유 종류 등)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  orderItems OrderItem[]
-}
-
-model Order {
-  id          String      @id @default(uuid())
-  customerId  String?     // 고객 식별자 (세션 또는 사용자 ID)
-  status      OrderStatus @default(PENDING)
-  totalPrice  Float
+  isAvailable Boolean     @default(true)
+  options     Json?       // 커스터마이징 옵션 (JSON 형식)
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
+  orderItems  OrderItem[]
 
-  items       OrderItem[]
+  @@index([category])
+  @@index([isAvailable])
 }
 
+// 주문 모델
+model Order {
+  id         String       @id @default(uuid())
+  customerId String       // 고객 식별자 (최소 구현에서는 단순 문자열)
+  status     OrderStatus  @default(PENDING)
+  totalPrice Int
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  items      OrderItem[]
+
+  @@index([customerId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// 주문 항목 모델
 model OrderItem {
-  id          String  @id @default(uuid())
-  orderId     String
-  menuId      String
-  quantity    Int     @default(1)
-  customizations Json? // 선택한 커스터마이징 옵션
-  price       Float   // 주문 시점의 가격
+  id            String    @id @default(uuid())
+  orderId       String
+  menuId        String
+  quantity      Int
+  price         Int       // 주문 시점의 가격 (메뉴 가격 변경 대비)
+  customizations Json?    // 커스터마이징 옵션 (JSON 형식)
+  createdAt     DateTime  @default(now())
+  order         Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menu          Menu      @relation(fields: [menuId], references: [id])
 
-  order       Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  menu        Menu    @relation(fields: [menuId], references: [id])
-
-  createdAt   DateTime @default(now())
-}
-
-enum OrderStatus {
-  PENDING      // 주문 접수
-  PREPARING    // 제조 중
-  READY        // 준비 완료
-  COMPLETED    // 픽업 완료
-  CANCELLED    // 취소됨
+  @@index([orderId])
+  @@index([menuId])
 }
 

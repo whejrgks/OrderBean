@@ -1,28 +1,37 @@
 import api from './api'
-import { Order, OrderStatus } from '../store/useOrderStore'
+import { Customizations, OrderItem as OrderItemType } from '../types'
 
-export const orderService = {
-  async create(items: Array<{ menuId: string; quantity: number; customizations?: any }>, customerId?: string): Promise<Order> {
-    const response = await api.post('/orders', { items, customerId })
-    return response.data.order
-  },
+export interface OrderItem {
+  menuId: string
+  quantity: number
+  customizations?: Customizations
+}
 
-  async getAll(customerId?: string, status?: OrderStatus): Promise<Order[]> {
-    const params: any = {}
-    if (customerId) params.customerId = customerId
-    if (status) params.status = status
-    const response = await api.get('/orders', { params })
-    return response.data.orders
-  },
+export interface CreateOrderRequest {
+  customerId?: string
+  items: OrderItem[]
+}
 
-  async getById(id: string): Promise<Order> {
-    const response = await api.get(`/orders/${id}`)
-    return response.data.order
-  },
+export interface Order {
+  id: string
+  customerId: string
+  status: string
+  totalPrice: number
+  items: OrderItemType[]
+  createdAt: string
+  updatedAt: string
+}
 
-  async updateStatus(id: string, status: OrderStatus): Promise<Order> {
-    const response = await api.patch(`/orders/${id}/status`, { status })
-    return response.data.order
-  },
+export const createOrder = async (data: CreateOrderRequest): Promise<Order> => {
+  const response = await api.post<Order>('/orders', data)
+  return response.data
+}
+
+export const getOrders = async (filters?: {
+  customerId?: string
+  status?: string
+}): Promise<Order[]> => {
+  const response = await api.get<Order[]>('/orders', { params: filters })
+  return response.data
 }
 

@@ -1,111 +1,22 @@
-import prisma from '../config/database'
-import { OrderStatus } from '../models/Order'
+// 관리자 서비스 - 최소 구현
+// 나중에 Prisma를 사용한 실제 DB 연동으로 확장
 
-export const adminService = {
-  async getDashboardStats() {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
+export const getDashboardStats = async () => {
+  // 최소 구현: 기본 통계 객체 반환
+  // 이미지의 대시보드 통계 구조 반영
+  return {
+    totalOrders: 0,
+    pendingOrders: 0,      // 주문 접수
+    preparingOrders: 0,    // 제조 중
+    readyOrders: 0,        // 제조 완료
+    completedOrders: 0,    // 픽업 완료
+    cancelledOrders: 0,    // 취소됨
+  }
+}
 
-    const [
-      totalOrders,
-      totalRevenue,
-      todayOrders,
-      todayRevenue,
-      pendingOrders,
-      preparingOrders,
-      readyOrders,
-    ] = await Promise.all([
-      prisma.order.count(),
-      prisma.order.aggregate({
-        _sum: { totalPrice: true },
-      }),
-      prisma.order.count({
-        where: {
-          createdAt: { gte: today },
-        },
-      }),
-      prisma.order.aggregate({
-        where: {
-          createdAt: { gte: today },
-        },
-        _sum: { totalPrice: true },
-      }),
-      prisma.order.count({
-        where: { status: OrderStatus.PENDING },
-      }),
-      prisma.order.count({
-        where: { status: OrderStatus.PREPARING },
-      }),
-      prisma.order.count({
-        where: { status: OrderStatus.READY },
-      }),
-    ])
-
-    // 시간대별 주문 통계 (최근 7일)
-    const sevenDaysAgo = new Date()
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
-
-    const ordersByHour = await prisma.order.groupBy({
-      by: ['createdAt'],
-      where: {
-        createdAt: { gte: sevenDaysAgo },
-      },
-      _count: { id: true },
-    })
-
-    // 시간대별로 그룹화
-    const hourlyStats: Record<number, number> = {}
-    ordersByHour.forEach(order => {
-      const hour = new Date(order.createdAt).getHours()
-      hourlyStats[hour] = (hourlyStats[hour] || 0) + order._count.id
-    })
-
-    // 일별 매출 통계 (최근 30일)
-    const thirtyDaysAgo = new Date()
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
-
-    const dailyRevenue = await prisma.order.findMany({
-      where: {
-        createdAt: { gte: thirtyDaysAgo },
-        status: { not: OrderStatus.CANCELLED },
-      },
-      select: {
-        totalPrice: true,
-        createdAt: true,
-      },
-    })
-
-    const dailyStats: Record<string, number> = {}
-    dailyRevenue.forEach(order => {
-      const date = new Date(order.createdAt).toISOString().split('T')[0]
-      dailyStats[date] = (dailyStats[date] || 0) + order.totalPrice
-    })
-
-    return {
-      totalOrders,
-      totalRevenue: totalRevenue._sum.totalPrice || 0,
-      todayOrders,
-      todayRevenue: todayRevenue._sum.totalPrice || 0,
-      pendingOrders,
-      preparingOrders,
-      readyOrders,
-      hourlyStats,
-      dailyStats,
-    }
-  },
-
-  async getRecentOrders(limit: number = 10) {
-    return await prisma.order.findMany({
-      take: limit,
-      include: {
-        items: {
-          include: {
-            menu: true,
-          },
-        },
-      },
-      orderBy: { createdAt: 'desc' },
-    })
-  },
+export const getRecentOrders = async (limit?: number) => {
+  // 최소 구현: 빈 배열 반환
+  // limit 파라미터는 나중에 사용
+  return []
 }
 

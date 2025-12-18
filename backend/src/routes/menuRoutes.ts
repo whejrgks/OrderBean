@@ -1,13 +1,13 @@
 import { Router } from 'express'
-import { menuController } from '../controllers/menuController'
+import * as menuController from '../controllers/menuController'
 
 const router = Router()
 
-router.get('/', menuController.getAll)
-router.get('/:id', menuController.getById)
-router.post('/', menuController.create)
-router.put('/:id', menuController.update)
-router.delete('/:id', menuController.delete)
+router.get('/', menuController.getAllMenus)
+router.get('/:id', menuController.getMenuById)
+router.post('/', menuController.createMenu)
+router.put('/:id', menuController.updateMenu)
+router.delete('/:id', menuController.deleteMenu)
 router.patch('/:id/toggle-availability', menuController.toggleAvailability)
 
 export default router

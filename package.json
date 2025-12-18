@@ -1,26 +1,31 @@
 {
-  "name": "beantaste-map",
+  "name": "orderbean",
   "version": "1.0.0",
-  "description": "BeanTaste Map - 커피 취향 기반 카페 추천 플랫폼",
+  "description": "웹 기반 커피 주문 서비스 - OrderBean",
   "private": true,
   "workspaces": [
     "frontend",
     "backend"
   ],
   "scripts": {
-    "install:all": "npm install && cd frontend && npm install && cd ../backend && npm install",
-    "dev:frontend": "cd frontend && npm start",
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "dev:frontend": "cd frontend && npm run dev",
     "dev:backend": "cd backend && npm run dev",
+    "build": "npm run build:frontend && npm run build:backend",
     "build:frontend": "cd frontend && npm run build",
-    "test": "npm run test --workspaces"
+    "build:backend": "cd backend && npm run build",
+    "install:all": "npm install && cd frontend && npm install && cd ../backend && npm install"
   },
   "keywords": [
     "coffee",
+    "order",
     "cafe",
-    "recommendation",
-    "map"
+    "web-app"
   ],
   "author": "",
-  "license": "ISC"
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
 }
 

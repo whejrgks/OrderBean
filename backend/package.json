@@ -1,32 +1,38 @@
 {
-  "name": "beantaste-backend",
+  "name": "orderbean-backend",
   "version": "1.0.0",
-  "description": "BeanTaste Map Backend API",
-  "main": "src/index.js",
+  "description": "OrderBean 백엔드 API 서버",
+  "main": "dist/index.js",
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "nodemon src/index.js",
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio"
   },
-  "keywords": [
-    "coffee",
-    "cafe",
-    "recommendation",
-    "api"
-  ],
+  "keywords": ["coffee", "order", "api"],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "express": "^4.18.2",
+    "cors": "^2.8.5",
     "dotenv": "^16.3.1",
-    "jsonwebtoken": "^9.0.2",
-    "bcrypt": "^5.1.1",
-    "cors": "^2.8.5"
+    "prisma": "^5.7.1",
+    "@prisma/client": "^5.7.1"
   },
   "devDependencies": {
-    "nodemon": "^3.0.1",
-    "jest": "^29.7.0"
+    "@types/express": "^4.17.21",
+    "@types/cors": "^2.8.17",
+    "@types/node": "^20.10.5",
+    "@types/jest": "^29.5.11",
+    "@types/supertest": "^2.0.16",
+    "typescript": "^5.3.3",
+    "tsx": "^4.7.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.1",
+    "supertest": "^6.3.3"
   }
 }
 

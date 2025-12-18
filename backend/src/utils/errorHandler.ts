@@ -1,32 +1,18 @@
 import { Request, Response, NextFunction } from 'express'
 
-export class AppError extends Error {
-  statusCode: number
-  isOperational: boolean
-
-  constructor(message: string, statusCode: number = 500) {
-    super(message)
-    this.statusCode = statusCode
-    this.isOperational = true
-    Error.captureStackTrace(this, this.constructor)
-  }
+// 404 핸들러 - 존재하지 않는 라우트 처리
+export const notFoundHandler = (req: Request, res: Response, next: NextFunction) => {
+  res.status(404).json({ error: 'Not Found' })
 }
 
+// 기본 에러 핸들러 - 서버 내부 오류 처리
 export const errorHandler = (
-  err: Error | AppError,
+  err: Error,
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  if (err instanceof AppError) {
-    return res.status(err.statusCode).json({
-      error: err.message,
-    })
-  }
-
-  console.error('Unexpected error:', err)
-  res.status(500).json({
-    error: 'Internal server error',
-  })
+  console.error(err)
+  res.status(500).json({ error: 'Internal Server Error' })
 }
 

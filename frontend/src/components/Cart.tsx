@@ -1,94 +1,89 @@
+import React, { useMemo, useCallback } from 'react'
 import { useOrderStore } from '../store/useOrderStore'
-import { useMenuStore } from '../store/useMenuStore'
-import './Cart.css'
+import { calculateItemPrice } from '../utils/priceCalculator'
+import { extractSelectedOptionNames } from '../utils/optionParser'
+import { CartItem } from '../store/useOrderStore'
 
-function Cart() {
-  const cart = useOrderStore(state => state.cart)
-  const removeFromCart = useOrderStore(state => state.removeFromCart)
-  const updateCartItem = useOrderStore(state => state.updateCartItem)
-  const clearCart = useOrderStore(state => state.clearCart)
-  const createOrder = useOrderStore(state => state.createOrder)
-  const loading = useOrderStore(state => state.loading)
-  const getMenuById = useMenuStore(state => state.getMenuById)
-
-  const getTotalPrice = () => {
-    return cart.reduce((total, item) => {
-      const menu = getMenuById(item.menuId)
-      return total + (menu ? menu.price * item.quantity : 0)
+const Cart: React.FC = () => {
+  const { cart, createOrder, loading, removeFromCart, updateQuantity } = useOrderStore()
+  
+  const totalPrice = useMemo(() => {
+    return cart.reduce((sum, item) => {
+      return sum + calculateItemPrice(
+        item.menu.price,
+        item.quantity,
+        item.customizations
+      )
     }, 0)
-  }
+  }, [cart])
 
-  const handleCheckout = async () => {
-    try {
-      await createOrder()
-      alert('주문이 완료되었습니다!')
-    } catch (error: any) {
-      alert(`주문 실패: ${error.message}`)
+  const formatItemName = useCallback((item: CartItem): string => {
+    let name = item.menu.name
+    const optionNames = extractSelectedOptionNames(item.customizations)
+    if (optionNames.length > 0) {
+      name += ` (${optionNames.join(', ')})`
     }
-  }
-
+    return name
+  }, [])
+  
   if (cart.length === 0) {
     return (
-      <div className="cart empty">
-        <p>장바구니가 비어있습니다</p>
+      <div className="cart">
+        <h2 className="cart-title">장바구니</h2>
+        <div className="cart-empty">장바구니가 비어있습니다.</div>
       </div>
     )
   }
-
+  
   return (
     <div className="cart">
-      <div className="cart-header">
-        <h3>장바구니</h3>
-        <button className="btn-clear" onClick={clearCart}>
-          비우기
-        </button>
-      </div>
+      <h2 className="cart-title">장바구니</h2>
       <div className="cart-items">
-        {cart.map((item) => {
-          const menu = getMenuById(item.menuId)
-          if (!menu) return null
-
-          return (
-            <div key={`${item.menuId}-${JSON.stringify(item.customizations)}`} className="cart-item">
-              <div className="cart-item-info">
-                <span className="cart-item-name">{menu.name}</span>
-                <span className="cart-item-price">
-                  {(menu.price * item.quantity).toLocaleString()}원
-                </span>
-              </div>
-              <div className="cart-item-controls">
-                <button
-                  className="btn-quantity"
-                  onClick={() => updateCartItem(item.menuId, item.quantity - 1)}
-                >
-                  -
-                </button>
-                <span className="quantity">{item.quantity}</span>
-                <button
-                  className="btn-quantity"
-                  onClick={() => updateCartItem(item.menuId, item.quantity + 1)}
-                >
-                  +
-                </button>
-                <button
-                  className="btn-remove"
-                  onClick={() => removeFromCart(item.menuId)}
-                >
-                  삭제
-                </button>
-              </div>
+        {cart.map((item) => (
+          <div key={item.id} className="cart-item">
+            <div className="cart-item-info">
+              <span className="cart-item-name">
+                {formatItemName(item)} X {item.quantity}
+              </span>
+              <span className="cart-item-price">
+                {calculateItemPrice(
+                  item.menu.price,
+                  item.quantity,
+                  item.customizations
+                ).toLocaleString()}원
+              </span>
             </div>
-          )
-        })}
+            <div className="cart-item-actions">
+              <button 
+                className="quantity-btn"
+                onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
+              >
+                -
+              </button>
+              <span className="quantity">{item.quantity}</span>
+              <button 
+                className="quantity-btn"
+                onClick={() => updateQuantity(item.id, item.quantity + 1)}
+              >
+                +
+              </button>
+              <button 
+                className="remove-btn"
+                onClick={() => removeFromCart(item.id)}
+              >
+                삭제
+              </button>
+            </div>
+          </div>
+        ))}
       </div>
       <div className="cart-footer">
         <div className="cart-total">
-          <span>총 금액</span>
-          <span className="total-price">{getTotalPrice().toLocaleString()}원</span>
+          <strong>총 금액 {totalPrice.toLocaleString()}원</strong>
         </div>
-        <button
-          className="btn-checkout"
-          onClick={handleCheckout}
+        <button 
+          className="order-btn"
+          onClick={() => createOrder()} 
           disabled={loading}
         >
           {loading ? '주문 중...' : '주문하기'}
@@ -98,5 +93,7 @@ function Cart() {
   )
 }
 
-export default Cart
+Cart.displayName = 'Cart'
+
+export default React.memo(Cart)
 

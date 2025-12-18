@@ -1,12 +1,12 @@
 import { Router } from 'express'
-import { orderController } from '../controllers/orderController'
+import * as orderController from '../controllers/orderController'
 
 const router = Router()
 
-router.post('/', orderController.create)
-router.get('/', orderController.getAll)
-router.get('/:id', orderController.getById)
-router.patch('/:id/status', orderController.updateStatus)
+router.post('/', orderController.createOrder)
+router.get('/', orderController.getAllOrders)
+router.get('/:id', orderController.getOrderById)
+router.patch('/:id/status', orderController.updateOrderStatus)
 
 export default router
 
