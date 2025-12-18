@@ -23,22 +23,6 @@ const AdminPage: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    fetchMenus()
-  }, [fetchMenus])
-
-  useEffect(() => {
-    if (menus.length > 0) {
-      // 메뉴가 로드된 후 재고 초기화 및 대시보드 데이터 로드
-      const initialInventory: Record<string, number> = {}
-      menus.forEach(menu => {
-        initialInventory[menu.id] = INVENTORY_CONFIG.DEFAULT_STOCK
-      })
-      setInventory(prev => ({ ...prev, ...initialInventory }))
-      loadDashboardData()
-    }
-  }, [menus, loadDashboardData])
-
   const loadDashboardData = useCallback(async () => {
     try {
       setLoading(true)
@@ -56,6 +40,22 @@ const AdminPage: React.FC = () => {
       setLoading(false)
     }
   }, [])
+
+  useEffect(() => {
+    fetchMenus()
+    loadDashboardData()
+  }, [fetchMenus, loadDashboardData])
+
+  useEffect(() => {
+    if (menus.length > 0) {
+      // 메뉴가 로드된 후 재고 초기화
+      const initialInventory: Record<string, number> = {}
+      menus.forEach(menu => {
+        initialInventory[menu.id] = INVENTORY_CONFIG.DEFAULT_STOCK
+      })
+      setInventory(prev => ({ ...prev, ...initialInventory }))
+    }
+  }, [menus])
 
   const updateInventory = useCallback((menuId: string, delta: number) => {
     setInventory(prev => ({

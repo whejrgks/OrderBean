@@ -4,7 +4,7 @@ import { calculateItemPrice } from '../utils/priceCalculator'
 import { extractSelectedOptionNames } from '../utils/optionParser'
 import { CartItem } from '../store/useOrderStore'
 
-const Cart: React.FC = React.memo(() => {
+const Cart: React.FC = () => {
   const { cart, createOrder, loading, removeFromCart, updateQuantity } = useOrderStore()
   
   const totalPrice = useMemo(() => {
@@ -93,9 +93,7 @@ const Cart: React.FC = React.memo(() => {
   )
 }
 
-})
-
 Cart.displayName = 'Cart'
 
-export default Cart
+export default React.memo(Cart)
 

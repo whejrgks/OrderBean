@@ -15,7 +15,7 @@ interface MenuOption {
   checked: boolean
 }
 
-const MenuCard: React.FC<MenuCardProps> = React.memo(({ menu, addToCart }) => {
+const MenuCard: React.FC<MenuCardProps> = ({ menu, addToCart }) => {
   // 옵션 초기화 (메뉴의 options 필드에서 가져오거나 기본값 사용)
   const defaultOptions: MenuOption[] = useMemo(() => {
     const parsedOptions = parseMenuOptions(menu.options)
@@ -111,9 +111,7 @@ const MenuCard: React.FC<MenuCardProps> = React.memo(({ menu, addToCart }) => {
   )
 }
 
-})
-
 MenuCard.displayName = 'MenuCard'
 
-export default MenuCard
+export default React.memo(MenuCard)
 
