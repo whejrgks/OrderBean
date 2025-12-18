@@ -1,36 +1,92 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { BrowserRouter } from 'react-router-dom'
+import OrderPage from '../../pages/OrderPage'
+import { useMenuStore } from '../../store/useMenuStore'
+import { useOrderStore } from '../../store/useOrderStore'
 
-// RED 테스트: 실패하는 테스트 케이스
+vi.mock('../../store/useMenuStore')
+vi.mock('../../store/useOrderStore')
 
-describe('OrderPage - RED Tests (실패해야 함)', () => {
-  const renderWithRouter = (component: React.ReactElement) => {
-    return render(<BrowserRouter>{component}</BrowserRouter>)
-  }
+describe('OrderPage', () => {
+  const mockFetchMenus = vi.fn()
 
-  it.skip('should render page title - 페이지가 아직 구현되지 않음', () => {
-    // 페이지 구현 후 활성화
-    expect(true).toBe(true) // 플레이스홀더
+  beforeEach(() => {
+    vi.clearAllMocks()
+    vi.mocked(useMenuStore).mockReturnValue({
+      menus: [],
+      loading: false,
+      error: null,
+      fetchMenus: mockFetchMenus,
+      getMenuById: vi.fn(),
+    } as any)
+    
+    vi.mocked(useOrderStore).mockReturnValue({
+      addToCart: vi.fn(),
+    } as any)
   })
 
-  it.skip('should display menu list', () => {
-    // 페이지 구현 후 활성화
-    expect(true).toBe(true) // 플레이스홀더
+  it('should render page title', () => {
+    render(
+      <BrowserRouter>
+        <OrderPage />
+      </BrowserRouter>
+    )
+    expect(screen.getByText('주문하기')).toBeInTheDocument()
   })
 
-  it.skip('should filter menus by category', () => {
-    // 페이지 구현 후 활성화
-    expect(true).toBe(true) // 플레이스홀더
+  it('should display menu list', () => {
+    const mockMenus = [
+      { 
+        id: '1', 
+        name: '아메리카노', 
+        price: 4000, 
+        category: '커피', 
+        isAvailable: true, 
+        createdAt: '', 
+        updatedAt: '' 
+      }
+    ]
+    vi.mocked(useMenuStore).mockReturnValue({
+      menus: mockMenus,
+      loading: false,
+      error: null,
+      fetchMenus: mockFetchMenus,
+      getMenuById: vi.fn(),
+    } as any)
+    
+    render(
+      <BrowserRouter>
+        <OrderPage />
+      </BrowserRouter>
+    )
+    expect(screen.getByText('아메리카노')).toBeInTheDocument()
   })
 
-  it.skip('should display cart component', () => {
-    // 페이지 구현 후 활성화
-    expect(true).toBe(true) // 플레이스홀더
+  it('should show loading state while fetching menus', () => {
+    vi.mocked(useMenuStore).mockReturnValue({
+      menus: [],
+      loading: true,
+      error: null,
+      fetchMenus: mockFetchMenus,
+      getMenuById: vi.fn(),
+    } as any)
+    
+    render(
+      <BrowserRouter>
+        <OrderPage />
+      </BrowserRouter>
+    )
+    expect(screen.getByText('로딩 중...')).toBeInTheDocument()
   })
 
-  it.skip('should show loading state while fetching menus', () => {
-    // 페이지 구현 후 활성화
-    expect(true).toBe(true) // 플레이스홀더
+  it('should display cart component', () => {
+    render(
+      <BrowserRouter>
+        <OrderPage />
+      </BrowserRouter>
+    )
+    // Cart 컴포넌트가 렌더링되는지 확인 (빈 장바구니 메시지)
+    expect(screen.getByText('장바구니가 비어있습니다.')).toBeInTheDocument()
   })
 })

@@ -1,10 +1,9 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import MenuCard from '../../components/MenuCard'
 
-// RED 테스트: 실패하는 테스트 케이스
-// 컴포넌트가 아직 구현되지 않았으므로 스킵
-
-describe('MenuCard Component - RED Tests (실패해야 함)', () => {
+describe('MenuCard Component', () => {
   const mockMenu = {
     id: 'menu-1',
     name: '아메리카노',
@@ -16,30 +15,36 @@ describe('MenuCard Component - RED Tests (실패해야 함)', () => {
     updatedAt: '2024-01-01T00:00:00.000Z',
   }
 
-  it.skip('should render menu name - 컴포넌트가 아직 구현되지 않음', () => {
-    // 컴포넌트 구현 후 활성화
-    // render(<MenuCard menu={mockMenu} />)
-    // expect(screen.getByText('아메리카노')).toBeInTheDocument()
-    expect(true).toBe(true) // 플레이스홀더
+  it('should render menu name', () => {
+    render(<MenuCard menu={mockMenu} />)
+    expect(screen.getByText('아메리카노')).toBeInTheDocument()
   })
 
-  it.skip('should render menu price', () => {
-    // 컴포넌트 구현 후 활성화
-    expect(true).toBe(true) // 플레이스홀더
+  it('should render menu price', () => {
+    render(<MenuCard menu={mockMenu} />)
+    expect(screen.getByText('4,000원')).toBeInTheDocument()
   })
 
-  it.skip('should render description when available', () => {
-    // 컴포넌트 구현 후 활성화
-    expect(true).toBe(true) // 플레이스홀더
+  it('should render description when available', () => {
+    render(<MenuCard menu={mockMenu} />)
+    expect(screen.getByText('진한 커피')).toBeInTheDocument()
   })
 
-  it.skip('should disable button when menu is unavailable', () => {
-    // 컴포넌트 구현 후 활성화
-    expect(true).toBe(true) // 플레이스홀더
+  it('should disable button when menu is unavailable', () => {
+    const unavailableMenu = { ...mockMenu, isAvailable: false }
+    render(<MenuCard menu={unavailableMenu} />)
+    const button = screen.getByText('담기')
+    expect(button).toBeDisabled()
   })
 
-  it.skip('should call addToCart when button is clicked', () => {
-    // 컴포넌트 구현 후 활성화
-    expect(true).toBe(true) // 플레이스홀더
+  it('should call addToCart when button is clicked', async () => {
+    const addToCart = vi.fn()
+    const user = userEvent.setup()
+    render(<MenuCard menu={mockMenu} addToCart={addToCart} />)
+    
+    const button = screen.getByText('담기')
+    await user.click(button)
+    
+    expect(addToCart).toHaveBeenCalledWith(mockMenu)
   })
 })

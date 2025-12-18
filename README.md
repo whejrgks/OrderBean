@@ -242,54 +242,72 @@ OrderBean/
 - **Axios** - HTTP 클라이언트
 
 ### Backend
-- **Node.js** - 런타임 환경
-- **Express** - 웹 프레임워크
-- **TypeScript** - 타입 안정성
-- **Prisma** - ORM 및 데이터베이스 관리
+- **Python 3.11+** - 런타임 환경
+- **FastAPI** - 비동기 고성능 Python 웹 프레임워크
+- **SQLAlchemy** - ORM 및 데이터베이스 관리
+- **Alembic** - 데이터베이스 마이그레이션
 - **PostgreSQL** - 데이터베이스
+- **Pydantic** - 데이터 검증 및 설정 관리
 
 ---
 
 ## 10. 시작하기 (Getting Started)
 
 ### 사전 요구사항
-- Node.js 18 이상
+- Python 3.11 이상
 - PostgreSQL 14 이상
-- npm 또는 yarn
+- pip (Python 패키지 관리자)
+- Node.js 18 이상 (프론트엔드용)
+- npm 또는 yarn (프론트엔드용)
 
 ### 설치 및 실행
 
-1. **의존성 설치**
+1. **백엔드 의존성 설치**
    ```bash
-   npm run install:all
+   cd backend
+   pip install -r requirements.txt
    ```
 
-2. **환경 변수 설정**
-   - `backend/env.example`을 참고하여 `backend/.env` 파일 생성
-   - PostgreSQL 데이터베이스 URL 설정
-
-3. **데이터베이스 설정**
+2. **프론트엔드 의존성 설치**
    ```bash
-   # Prisma 클라이언트 생성
+   cd frontend
+   npm install
+   ```
+
+3. **환경 변수 설정**
+   - `backend/.env.example`을 참고하여 `backend/.env` 파일 생성
+   - PostgreSQL 데이터베이스 URL 설정
+   ```env
+   DATABASE_URL=postgresql://user:password@localhost:5432/orderbean
+   ```
+
+4. **데이터베이스 설정**
+   ```bash
    cd backend
-   npm run prisma:generate
+   # Alembic 마이그레이션 초기화 (최초 1회)
+   alembic init alembic
    
    # 데이터베이스 마이그레이션
-   npm run prisma:migrate
-   
-   # (선택) Prisma Studio로 데이터베이스 확인
-   npm run prisma:studio
+   alembic revision --autogenerate -m "Initial migration"
+   alembic upgrade head
    ```
 
-4. **개발 서버 실행**
+5. **개발 서버 실행**
    ```bash
-   # 프론트엔드와 백엔드 동시 실행
-   npm run dev
+   # 백엔드 실행 (FastAPI)
+   cd backend
+   python run.py
+   # 또는
+   uvicorn app.main:app --reload --port 5000
    
-   # 또는 개별 실행
-   npm run dev:frontend  # http://localhost:3000
-   npm run dev:backend   # http://localhost:5000
+   # 프론트엔드 실행
+   cd frontend
+   npm run dev  # http://localhost:3000
    ```
+
+6. **API 문서 확인**
+   - Swagger UI: http://localhost:5000/docs
+   - ReDoc: http://localhost:5000/redoc
 
 ---
 
@@ -300,7 +318,9 @@ OrderBean/
 **백엔드 테스트**
 ```bash
 cd backend
-npm test
+pytest
+# 또는 상세 출력
+pytest -v
 ```
 
 **프론트엔드 테스트**
@@ -318,6 +338,118 @@ npm test
 - **REFACTOR**: 코드 개선 및 리팩토링
 
 자세한 내용은 [`docs/tests/TEST_STRATEGY.md`](./docs/tests/TEST_STRATEGY.md)를 참고하세요.
+
+---
+
+## 12. 리팩토링 할 일 목록 (Refactoring TODO)
+
+프론트엔드 코드 분석 결과를 바탕으로 한 리팩토링 작업 목록입니다. 자세한 내용은 [`frontend/CODE_REVIEW.md`](./frontend/CODE_REVIEW.md)를 참고하세요.
+
+### 🔴 높은 우선순위 (즉시 개선 필요)
+
+#### 1. 타입 안정성 개선
+- [ ] `any` 타입 제거 및 명확한 인터페이스 정의
+  - [ ] `Cart.tsx`: `calculateItemPrice`, `formatItemName` 함수 타입 정의
+  - [ ] `MenuCard.tsx`: 옵션 파싱 로직 타입 정의
+  - [ ] `AdminPage.tsx`: `Order`, `OrderItem` 인터페이스 명확화
+  - [ ] `orderService.ts`, `adminService.ts`: `items: any[]` 타입 개선
+- [ ] `Menu.options` 타입 명확화 (`menuService.ts`)
+- [ ] `CartItem`, `OrderItem`의 `customizations` 타입 정의
+- [ ] 주문 아이템 구조 일관성 확보 (menu_name, menu_id, menuId 통일)
+
+#### 2. 상태 관리 개선
+- [ ] Zustand 상태 업데이트 시 불변성 원칙 준수
+  - [ ] `useOrderStore.ts`: `addToCart` 함수 불변성 수정 (44줄)
+  - [ ] `useOrderStore.ts`: `updateQuantity` 함수 불변성 수정 (55-61줄)
+- [ ] 상태 업데이트 패턴 통일
+
+#### 3. 코드 중복 제거
+- [ ] 가격 계산 로직 통합
+  - [ ] `utils/priceCalculator.ts` 생성
+  - [ ] `Cart.tsx`, `MenuCard.tsx`, `AdminPage.tsx`에서 공통 함수 사용
+- [ ] 날짜 포맷팅 로직 분리
+  - [ ] `utils/dateFormatter.ts` 생성
+  - [ ] `AdminPage.tsx`의 `formatOrderDate` 함수 이동
+- [ ] 옵션 파싱 로직 통합
+  - [ ] `utils/optionParser.ts` 생성
+  - [ ] `MenuCard.tsx`, `AdminPage.tsx`의 옵션 처리 로직 통합
+
+#### 4. 에러 처리 개선
+- [ ] 일관된 에러 처리 전략 수립
+  - [ ] `useMenuStore.ts`, `useOrderStore.ts` 에러 메시지 통일
+  - [ ] `AdminPage.tsx` 에러 처리 UI 피드백 추가
+- [ ] 사용자 피드백 추가
+  - [ ] 토스트 메시지 또는 알림 컴포넌트 구현
+  - [ ] 주문 성공/실패 시 피드백 제공
+  - [ ] 재고 업데이트 시 피드백 제공
+
+### 🟠 중간 우선순위 (단기 개선)
+
+#### 5. 컴포넌트 분리
+- [ ] `AdminPage.tsx` 리팩토링 (258줄 → 여러 컴포넌트로 분리)
+  - [ ] `DashboardStats` 컴포넌트 분리
+  - [ ] `InventorySection` 컴포넌트 분리
+  - [ ] `OrdersSection` 컴포넌트 분리
+- [ ] `OrderStatusButton` 컴포넌트 생성
+  - [ ] `AdminPage.tsx`의 조건부 렌더링 로직 분리
+- [ ] 인라인 스타일 제거
+  - [ ] `OrderPage.tsx`의 인라인 스타일을 CSS 클래스로 변환
+
+#### 6. 성능 최적화
+- [ ] 불필요한 리렌더링 방지
+  - [ ] `Cart.tsx`: `calculateItemPrice`, `formatItemName` 함수 메모이제이션
+  - [ ] `MenuCard.tsx`: `getOptionsFromMenu` 함수 메모이제이션
+- [ ] 컴포넌트 메모이제이션
+  - [ ] `OrderPage.tsx`: `menus.map` 결과 메모이제이션
+  - [ ] `AdminPage.tsx`: 복잡한 계산 로직 메모이제이션
+  - [ ] `React.memo` 적용 검토
+
+#### 7. 프로덕션 코드 정리
+- [ ] 디버그 로그 제거 또는 조건부 처리
+  - [ ] `api.ts`: 12개의 `console.log/error` 조건부 처리
+  - [ ] `useMenuStore.ts`: 4개의 `console.log/error` 조건부 처리
+  - [ ] 개발 환경에서만 로깅하도록 수정
+- [ ] 하드코딩된 값 제거
+  - [ ] `AdminPage.tsx`: 매직 넘버 `10` 상수화
+  - [ ] `api.ts`: `timeout: 5000` 설정 파일로 분리
+  - [ ] `OrderPage.tsx`: `http://localhost:5000` 환경 변수로 분리
+  - [ ] `constants/config.ts` 파일 생성
+- [ ] ESLint 비활성화 해결
+  - [ ] `OrderPage.tsx`, `AdminPage.tsx`의 `eslint-disable` 제거
+  - [ ] 의존성 배열 수정 또는 명시적 의도 주석 추가
+
+### 🟡 낮은 우선순위 (장기 개선)
+
+#### 8. 타입 정의 통합
+- [ ] snake_case vs camelCase 통일
+  - [ ] `adminService.ts`의 `DashboardStats`, `Order` 인터페이스 camelCase로 변환
+  - [ ] 백엔드 응답 변환 시점에 camelCase로 통일
+- [ ] 중복 인터페이스 제거
+  - [ ] `types/index.ts` 공통 타입 파일 생성
+  - [ ] `AdminPage.tsx`, `adminService.ts`의 중복 인터페이스 통합
+
+#### 9. 접근성 개선
+- [ ] ARIA 속성 추가
+  - [ ] 버튼에 `aria-label` 추가
+  - [ ] 에러 메시지에 `role="alert"` 추가
+- [ ] 로딩 스피너 컴포넌트 추가
+- [ ] 스크린 리더 최적화
+
+#### 10. 테스트 가능성 향상
+- [ ] 순수 함수 분리
+  - [ ] 비즈니스 로직을 컴포넌트에서 유틸리티 함수로 분리
+  - [ ] 단위 테스트 작성 용이하도록 구조 개선
+- [ ] 의존성 주입 패턴 적용
+  - [ ] 서비스 레이어 모킹 가능한 구조로 변경
+
+---
+
+### 리팩토링 진행 시 주의사항
+
+1. **점진적 개선**: 한 번에 모든 것을 바꾸지 말고 단계적으로 개선
+2. **테스트 작성**: 리팩토링 전후 테스트 작성으로 회귀 방지
+3. **기능 검증**: 각 리팩토링 단계마다 기능 동작 확인
+4. **문서화**: 변경 사항과 이유를 문서화
 
 ---
 
