@@ -99,10 +99,47 @@ const AdminPage: React.FC = () => {
   }
 
   const formatOrderItems = (items: any[]) => {
-    return items.map(item => {
-      const menu = menus.find(m => m.id === item.menu_id)
-      const menuName = menu?.name || '알 수 없음'
-      return `${menuName} x ${item.quantity}`
+    if (!items || items.length === 0) return '주문 항목 없음'
+    
+    return items.map((item, index) => {
+      // 메뉴 이름 가져오기
+      let menuName = item.menu_name
+      if (!menuName) {
+        const menuId = item.menu_id || item.menuId
+        if (menuId) {
+          const menu = menus.find(m => {
+            const mId = String(m.id || '')
+            const iId = String(menuId || '')
+            return mId === iId || mId.toLowerCase() === iId.toLowerCase()
+          })
+          if (menu) {
+            menuName = menu.name
+          }
+        }
+      }
+      if (!menuName) {
+        menuName = '알 수 없음'
+      }
+      
+      // 옵션 정보 가져오기
+      let optionsText = ''
+      if (item.selected_options && item.selected_options.length > 0) {
+        optionsText = ` (${item.selected_options.join(', ')})`
+      } else if (item.customizations) {
+        // customizations에서 옵션 추출
+        const customizations = item.customizations
+        if (customizations.options && Array.isArray(customizations.options)) {
+          const optionNames = customizations.options.map((opt: any) => opt.name || opt).filter(Boolean)
+          if (optionNames.length > 0) {
+            optionsText = ` (${optionNames.join(', ')})`
+          }
+        }
+      }
+      
+      // 각 아이템의 가격 (item.price는 이미 수량을 곱한 총 가격)
+      const itemTotalPrice = item.price || 0
+      
+      return `${menuName}${optionsText} x ${item.quantity} - ${itemTotalPrice.toLocaleString()}원`
     }).join(', ')
   }
 
@@ -170,7 +207,12 @@ const AdminPage: React.FC = () => {
                   <div className="order-info">
                     <div className="order-date">{formatOrderDate(order.created_at)}</div>
                     <div className="order-details">
-                      {formatOrderItems(order.items)} - {order.total_price.toLocaleString()}원
+                      <div className="order-items-list">
+                        {formatOrderItems(order.items || [])}
+                      </div>
+                      <div className="order-total-price">
+                        총액: {order.total_price ? order.total_price.toLocaleString() : 0}원
+                      </div>
                     </div>
                   </div>
                   <div className="order-actions">

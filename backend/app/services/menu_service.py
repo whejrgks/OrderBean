@@ -16,7 +16,7 @@ async def get_all_menus():
             "description": "시원한 아이스 아메리카노",
             "price": 4000,
             "category": "커피",
-            "image_url": None,
+            "image_url": "/americano-ice.jpg",
             "is_available": True,
             "options": {
                 "items": [
@@ -33,7 +33,7 @@ async def get_all_menus():
             "description": "따뜻한 핫 아메리카노",
             "price": 4000,
             "category": "커피",
-            "image_url": None,
+            "image_url": "/americano-hot.jpg",
             "is_available": True,
             "options": {
                 "items": [
@@ -50,7 +50,7 @@ async def get_all_menus():
             "description": "부드러운 카페라떼",
             "price": 5000,
             "category": "커피",
-            "image_url": None,
+            "image_url": "/cafe-latte.jpg",
             "is_available": True,
             "options": {
                 "items": [

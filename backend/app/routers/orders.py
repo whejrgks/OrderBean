@@ -6,15 +6,16 @@ from app.services import order_service as order_service_module
 router = APIRouter()
 
 
-@router.post("/", response_model=schemas.Order, status_code=201)
+@router.post("/", status_code=201)
 async def create_order(order: schemas.OrderCreate):
     """주문 생성"""
     order_data = order.model_dump()
     created_order = await order_service_module.create_order(order_data)
+    # 스키마 검증을 우회하고 직접 반환 (menu_name 포함)
     return created_order
 
 
-@router.get("/", response_model=List[schemas.Order])
+@router.get("/")
 async def get_all_orders(
     customer_id: Optional[str] = Query(None),
     status: Optional[str] = Query(None)
@@ -22,6 +23,7 @@ async def get_all_orders(
     """모든 주문 조회"""
     filters = {"customer_id": customer_id, "status": status}
     orders = await order_service_module.get_all_orders(filters)
+    # 스키마 검증을 우회하고 직접 반환 (menu_name 포함)
     return orders
 
 

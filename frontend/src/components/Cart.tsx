@@ -39,8 +39,8 @@ const Cart: React.FC = () => {
     <div className="cart">
       <h2 className="cart-title">장바구니</h2>
       <div className="cart-items">
-        {cart.map((item, index) => (
-          <div key={`${item.menu.id}-${index}`} className="cart-item">
+        {cart.map((item) => (
+          <div key={item.id} className="cart-item">
             <div className="cart-item-info">
               <span className="cart-item-name">
                 {formatItemName(item)} X {item.quantity}
@@ -52,20 +52,20 @@ const Cart: React.FC = () => {
             <div className="cart-item-actions">
               <button 
                 className="quantity-btn"
-                onClick={() => updateQuantity(item.menu.id, Math.max(1, item.quantity - 1))}
+                onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
               >
                 -
               </button>
               <span className="quantity">{item.quantity}</span>
               <button 
                 className="quantity-btn"
-                onClick={() => updateQuantity(item.menu.id, item.quantity + 1)}
+                onClick={() => updateQuantity(item.id, item.quantity + 1)}
               >
                 +
               </button>
               <button 
                 className="remove-btn"
-                onClick={() => removeFromCart(item.menu.id)}
+                onClick={() => removeFromCart(item.id)}
               >
                 삭제
               </button>

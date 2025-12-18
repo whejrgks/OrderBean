@@ -48,6 +48,8 @@ class OrderItemBase(BaseModel):
 
 class OrderItemCreate(BaseModel):
     menuId: str  # API에서는 camelCase로 받음
+    menuName: Optional[str] = None  # 메뉴 이름도 함께 받음
+    menuPrice: Optional[int] = None  # 메뉴 가격도 함께 받음
     quantity: int
     customizations: Optional[Dict[str, Any]] = None
 
@@ -55,6 +57,7 @@ class OrderItemCreate(BaseModel):
 class OrderItem(OrderItemBase):
     id: UUID
     order_id: UUID
+    menu_name: Optional[str] = None  # 메뉴 이름 필드 추가
     price: int
     created_at: datetime
 
