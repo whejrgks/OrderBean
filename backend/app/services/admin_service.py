@@ -1,7 +1,11 @@
-# 관리자 서비스 - 최소 구현
-# 나중에 SQLAlchemy를 사용한 실제 DB 연동으로 확장
+"""관리자 서비스"""
+from typing import Dict, Any, List, Optional
+from app.utils.logger import logger
 
-async def get_dashboard_stats():
+# TODO: 실제 데이터베이스 연동으로 전환 필요
+
+
+async def get_dashboard_stats() -> Dict[str, int]:
     """대시보드 통계 조회"""
     # 최소 구현: order_service에서 주문 목록을 가져와서 통계 계산
     from app.services import order_service
@@ -34,7 +38,7 @@ async def get_dashboard_stats():
     return stats
 
 
-async def get_recent_orders(limit: int = None):
+async def get_recent_orders(limit: Optional[int] = None) -> List[Dict[str, Any]]:
     """최근 주문 조회"""
     # 최소 구현: order_service에서 주문 목록 가져오기
     from app.services import order_service

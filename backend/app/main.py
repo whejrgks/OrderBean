@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers import menus, orders, admin
+from app.config import ALLOWED_ORIGINS, IS_DEV, SERVER_HOST, SERVER_PORT
 
 # FastAPI 앱 생성
 app = FastAPI(
@@ -14,7 +15,7 @@ app = FastAPI(
 # CORS 설정
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 개발 환경에서는 모든 origin 허용
+    allow_origins=ALLOWED_ORIGINS if not IS_DEV else ["*"],  # 개발 환경에서만 모든 origin 허용
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -34,5 +35,5 @@ async def health_check():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=5000)
+    uvicorn.run(app, host=SERVER_HOST, port=SERVER_PORT)
 

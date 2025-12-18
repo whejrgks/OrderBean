@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 from uuid import UUID
@@ -52,17 +52,24 @@ class OrderItemCreate(BaseModel):
     menuPrice: Optional[int] = None  # 메뉴 가격도 함께 받음
     quantity: int
     customizations: Optional[Dict[str, Any]] = None
+    
+    class Config:
+        # camelCase 필드명을 snake_case로 변환하지 않음
+        populate_by_name = True
 
 
 class OrderItem(OrderItemBase):
     id: UUID
     order_id: UUID
     menu_name: Optional[str] = None  # 메뉴 이름 필드 추가
+    menu_id: UUID  # OrderItemBase에 있지만 명시적으로 포함
     price: int
     created_at: datetime
+    selected_options: Optional[List[str]] = None  # 선택된 옵션 목록
 
     class Config:
         from_attributes = True
+        populate_by_name = True
 
 
 # Order Schemas
@@ -74,6 +81,9 @@ class OrderBase(BaseModel):
 class OrderCreate(BaseModel):
     customerId: Optional[str] = None  # API에서는 camelCase로 받음
     items: List[OrderItemCreate]
+    
+    class Config:
+        populate_by_name = True
 
 
 class OrderUpdate(BaseModel):
