@@ -1,35 +1,80 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { useMenuStore } from '../../store/useMenuStore'
+import * as menuService from '../../services/menuService'
 
-// RED 테스트: 실패하는 테스트 케이스
+vi.mock('../../services/menuService')
 
-describe('useMenuStore - RED Tests (실패해야 함)', () => {
-  it.skip('should initialize with empty menus array - 스토어가 아직 구현되지 않음', () => {
-    // 스토어 구현 후 활성화
-    expect(true).toBe(true) // 플레이스홀더
+describe('useMenuStore', () => {
+  beforeEach(() => {
+    useMenuStore.setState({ menus: [], loading: false, error: null })
   })
 
-  it.skip('should fetch menus from API', async () => {
-    // 스토어 구현 후 활성화
-    expect(true).toBe(true) // 플레이스홀더
+  it('should initialize with empty menus array', () => {
+    const state = useMenuStore.getState()
+    expect(state.menus).toEqual([])
+    expect(state.loading).toBe(false)
+    expect(state.error).toBeNull()
   })
 
-  it.skip('should filter menus by category', async () => {
-    // 스토어 구현 후 활성화
-    expect(true).toBe(true) // 플레이스홀더
+  it('should fetch menus from API', async () => {
+    const mockMenus = [
+      { 
+        id: '1', 
+        name: '아메리카노', 
+        price: 4000, 
+        category: '커피', 
+        isAvailable: true, 
+        createdAt: '', 
+        updatedAt: '' 
+      }
+    ]
+    vi.mocked(menuService.getMenus).mockResolvedValue(mockMenus)
+    
+    await useMenuStore.getState().fetchMenus()
+    
+    const state = useMenuStore.getState()
+    expect(state.menus).toEqual(mockMenus)
+    expect(state.loading).toBe(false)
   })
 
-  it.skip('should get menu by id', () => {
-    // 스토어 구현 후 활성화
-    expect(true).toBe(true) // 플레이스홀더
+  it('should get menu by id', () => {
+    const mockMenus = [
+      { 
+        id: '1', 
+        name: '아메리카노', 
+        price: 4000, 
+        category: '커피', 
+        isAvailable: true, 
+        createdAt: '', 
+        updatedAt: '' 
+      }
+    ]
+    useMenuStore.setState({ menus: mockMenus })
+    
+    const menu = useMenuStore.getState().getMenuById('1')
+    expect(menu).toEqual(mockMenus[0])
   })
 
-  it.skip('should handle loading state', async () => {
-    // 스토어 구현 후 활성화
-    expect(true).toBe(true) // 플레이스홀더
+  it('should handle loading state', async () => {
+    const mockMenus: any[] = []
+    vi.mocked(menuService.getMenus).mockImplementation(() => 
+      new Promise(resolve => setTimeout(() => resolve(mockMenus), 100))
+    )
+    
+    const fetchPromise = useMenuStore.getState().fetchMenus()
+    expect(useMenuStore.getState().loading).toBe(true)
+    
+    await fetchPromise
+    expect(useMenuStore.getState().loading).toBe(false)
   })
 
-  it.skip('should handle error state', async () => {
-    // 스토어 구현 후 활성화
-    expect(true).toBe(true) // 플레이스홀더
+  it('should handle error state', async () => {
+    vi.mocked(menuService.getMenus).mockRejectedValue(new Error('API Error'))
+    
+    await useMenuStore.getState().fetchMenus()
+    
+    const state = useMenuStore.getState()
+    expect(state.error).toBe('Failed to fetch menus')
+    expect(state.loading).toBe(false)
   })
 })
