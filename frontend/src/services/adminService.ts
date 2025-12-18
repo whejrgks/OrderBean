@@ -1,25 +1,7 @@
 import api from './api'
+import { DashboardStats, Order, OrderItem } from '../types'
 
-export interface DashboardStats {
-  total_orders: number
-  pending_orders: number
-  preparing_orders: number
-  ready_orders: number
-  completed_orders: number
-  cancelled_orders: number
-}
-
-export interface Order {
-  id: string
-  customer_id: string
-  status: string
-  total_price: number
-  items: any[]
-  created_at: string
-  updated_at: string
-}
-
-// 백엔드 응답(snake_case)을 프론트엔드 형식(camelCase)으로 변환
+// 백엔드 응답(snake_case)을 프론트엔드 형식으로 변환
 const transformOrder = (order: any): Order => {
   // total_price가 없거나 0이면 items의 price를 합산
   let totalPrice = order.total_price || 0
@@ -32,12 +14,17 @@ const transformOrder = (order: any): Order => {
     customer_id: order.customer_id,
     status: order.status,
     total_price: totalPrice,
-    // items를 그대로 전달 (menu_name 포함)
-    items: (order.items || []).map((item: any) => ({
-      ...item,
-      menu_name: item.menu_name, // menu_name 보존
-      menu_id: item.menu_id, // menu_id 보존
-      price: item.price || 0, // price 보존
+    // items를 타입 안전하게 변환
+    items: (order.items || []).map((item: any): OrderItem => ({
+      id: item.id || '',
+      menu_id: item.menu_id || '',
+      menuId: item.menuId || item.menu_id || '',
+      menu_name: item.menu_name || '',
+      menuName: item.menuName || item.menu_name || '',
+      quantity: item.quantity || 0,
+      price: item.price || 0,
+      customizations: item.customizations,
+      selected_options: item.selected_options || [],
     })),
     created_at: order.created_at,
     updated_at: order.updated_at,
@@ -51,12 +38,12 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
 
 export const getRecentOrders = async (limit?: number): Promise<Order[]> => {
   const params = limit ? { limit } : {}
-  const response = await api.get<any[]>('/admin/recent-orders', { params })
+  const response = await api.get<Order[]>('/admin/recent-orders', { params })
   return response.data.map(transformOrder)
 }
 
 export const updateOrderStatus = async (orderId: string, status: string): Promise<Order> => {
-  const response = await api.patch<any>(`/orders/${orderId}/status`, { status })
+  const response = await api.patch<Order>(`/orders/${orderId}/status`, { status })
   return transformOrder(response.data)
 }
 

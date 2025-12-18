@@ -1,9 +1,12 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { Menu } from '../services/menuService'
+import { parseMenuOptions } from '../utils/optionParser'
+import { calculateUnitPrice } from '../utils/priceCalculator'
+import { Customizations } from '../types'
 
 interface MenuCardProps {
   menu: Menu
-  addToCart?: (menu: Menu, quantity?: number, customizations?: Record<string, any>) => void
+  addToCart?: (menu: Menu, quantity?: number, customizations?: Customizations) => void
 }
 
 interface MenuOption {
@@ -14,33 +17,20 @@ interface MenuOption {
 
 const MenuCard: React.FC<MenuCardProps> = ({ menu, addToCart }) => {
   // 옵션 초기화 (메뉴의 options 필드에서 가져오거나 기본값 사용)
-  const getOptionsFromMenu = (): MenuOption[] => {
-    if (menu.options) {
-      // options가 객체이고 items 배열을 가지고 있는 경우
-      if (menu.options.items && Array.isArray(menu.options.items)) {
-        return menu.options.items.map((opt: any) => ({
-          name: opt.name || '',
-          price: opt.price || 0,
-          checked: false,
-        }))
-      }
-      // options가 직접 배열인 경우
-      if (Array.isArray(menu.options)) {
-        return menu.options.map((opt: any) => ({
-          name: opt.name || '',
-          price: opt.price || 0,
-          checked: false,
-        }))
-      }
+  const defaultOptions: MenuOption[] = useMemo(() => {
+    const parsedOptions = parseMenuOptions(menu.options)
+    
+    // 파싱된 옵션이 있으면 사용, 없으면 기본 옵션
+    if (parsedOptions.length > 0) {
+      return parsedOptions.map(opt => ({ ...opt, checked: false }))
     }
+    
     // 기본 옵션
     return [
       { name: '샷 추가', price: 500, checked: false },
       { name: '시럽 추가', price: 0, checked: false },
     ]
-  }
-  
-  const defaultOptions: MenuOption[] = getOptionsFromMenu()
+  }, [menu.options])
 
   const [options, setOptions] = useState<MenuOption[]>(defaultOptions)
 
@@ -58,17 +48,27 @@ const MenuCard: React.FC<MenuCardProps> = ({ menu, addToCart }) => {
       .filter(opt => opt.checked)
       .map(opt => ({ name: opt.name, price: opt.price }))
 
-    const customizations = selectedOptions.length > 0 
+    const customizations: Customizations | undefined = selectedOptions.length > 0 
       ? { options: selectedOptions }
       : undefined
 
     addToCart(menu, 1, customizations)
   }
 
-  // 옵션 포함 총 가격 계산
-  const totalPrice = menu.price + options
-    .filter(opt => opt.checked)
-    .reduce((sum, opt) => sum + opt.price, 0)
+  // 옵션 포함 단가 계산
+  const totalPrice = useMemo(() => {
+    const selectedCustomizations: Customizations | undefined = options
+      .filter(opt => opt.checked)
+      .length > 0
+      ? {
+          options: options
+            .filter(opt => opt.checked)
+            .map(opt => ({ name: opt.name, price: opt.price }))
+        }
+      : undefined
+    
+    return calculateUnitPrice(menu.price, selectedCustomizations)
+  }, [menu.price, options])
 
   return (
     <div className="menu-card">

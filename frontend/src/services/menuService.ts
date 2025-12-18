@@ -1,5 +1,7 @@
 import api from './api'
 
+import { MenuOptions } from '../types'
+
 export interface Menu {
   id: string
   name: string
@@ -8,7 +10,7 @@ export interface Menu {
   category: string
   imageUrl?: string
   isAvailable: boolean
-  options?: any[]  // 배열로 변경
+  options?: MenuOptions | any[]  // MenuOptions 또는 배열
   createdAt: string
   updatedAt: string
 }

@@ -4,25 +4,9 @@ import Header from '../components/Header'
 import { useOrderStore } from '../store/useOrderStore'
 import { useMenuStore } from '../store/useMenuStore'
 import * as adminService from '../services/adminService'
-
-interface DashboardStats {
-  total_orders: number
-  pending_orders: number
-  preparing_orders: number
-  ready_orders: number
-  completed_orders: number
-  cancelled_orders: number
-}
-
-interface Order {
-  id: string
-  customer_id: string
-  status: string
-  total_price: number
-  items: any[]
-  created_at: string
-  updated_at: string
-}
+import { formatOrderDate } from '../utils/dateFormatter'
+import { formatItemOptions } from '../utils/optionParser'
+import { DashboardStats, Order, OrderItem } from '../types'
 
 const AdminPage: React.FC = () => {
   const navigate = useNavigate()
@@ -39,6 +23,7 @@ const AdminPage: React.FC = () => {
   const [recentOrders, setRecentOrders] = useState<Order[]>([])
   const [inventory, setInventory] = useState<Record<string, number>>({})
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     fetchMenus()
@@ -60,14 +45,16 @@ const AdminPage: React.FC = () => {
   const loadDashboardData = async () => {
     try {
       setLoading(true)
+      setError(null)
       const [statsData, ordersData] = await Promise.all([
         adminService.getDashboardStats(),
         adminService.getRecentOrders(),
       ])
       setStats(statsData)
       setRecentOrders(ordersData)
-    } catch (error) {
-      console.error('Failed to load dashboard data:', error)
+    } catch (error: any) {
+      const errorMessage = error?.response?.data?.detail || error?.message || '대시보드 데이터를 불러오는데 실패했습니다'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -82,28 +69,21 @@ const AdminPage: React.FC = () => {
 
   const updateOrderStatus = async (orderId: string, status: string) => {
     try {
+      setError(null)
       await adminService.updateOrderStatus(orderId, status)
       await loadDashboardData() // 데이터 새로고침
-    } catch (error) {
-      console.error('Failed to update order status:', error)
+    } catch (error: any) {
+      const errorMessage = error?.response?.data?.detail || error?.message || '주문 상태 업데이트에 실패했습니다'
+      setError(errorMessage)
     }
   }
 
-  const formatOrderDate = (dateString: string) => {
-    const date = new Date(dateString)
-    const month = date.getMonth() + 1
-    const day = date.getDate()
-    const hours = date.getHours()
-    const minutes = date.getMinutes().toString().padStart(2, '0')
-    return `${month}월 ${day}일 ${hours}:${minutes}`
-  }
-
-  const formatOrderItems = (items: any[]) => {
+  const formatOrderItems = (items: OrderItem[]): string => {
     if (!items || items.length === 0) return '주문 항목 없음'
     
-    return items.map((item, index) => {
+    return items.map((item) => {
       // 메뉴 이름 가져오기
-      let menuName = item.menu_name
+      let menuName = item.menu_name || item.menuName
       if (!menuName) {
         const menuId = item.menu_id || item.menuId
         if (menuId) {
@@ -122,19 +102,7 @@ const AdminPage: React.FC = () => {
       }
       
       // 옵션 정보 가져오기
-      let optionsText = ''
-      if (item.selected_options && item.selected_options.length > 0) {
-        optionsText = ` (${item.selected_options.join(', ')})`
-      } else if (item.customizations) {
-        // customizations에서 옵션 추출
-        const customizations = item.customizations
-        if (customizations.options && Array.isArray(customizations.options)) {
-          const optionNames = customizations.options.map((opt: any) => opt.name || opt).filter(Boolean)
-          if (optionNames.length > 0) {
-            optionsText = ` (${optionNames.join(', ')})`
-          }
-        }
-      }
+      const optionsText = formatItemOptions(item)
       
       // 각 아이템의 가격 (item.price는 이미 수량을 곱한 총 가격)
       const itemTotalPrice = item.price || 0
@@ -160,6 +128,19 @@ const AdminPage: React.FC = () => {
       <div className="admin-page">
         <h1 className="admin-title">관리자 대시보드</h1>
         
+        {/* 에러 메시지 */}
+        {error && (
+          <div className="error" style={{ 
+            padding: '1rem', 
+            background: '#fee', 
+            color: '#c33', 
+            borderRadius: '4px', 
+            marginBottom: '1rem' 
+          }}>
+            {error}
+          </div>
+        )}
+
         {/* 대시보드 통계 */}
         <div className="dashboard-stats">
           <p>
@@ -255,4 +236,5 @@ const AdminPage: React.FC = () => {
 }
 
 export default AdminPage
+
 
